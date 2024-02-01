@@ -13,9 +13,9 @@ type ProductDB struct {
 func NewProductDB(db *sql.DB) *ProductDB {
 	return &ProductDB{db: db}
 }
-// Get all products
-func (pd *ProductDB) GetAllProducts() ([]*entity.Product, error) {
-	rows, err := pd.db.Query("SELECT id, name, price FROM products")
+
+func (pd *ProductDB) GetProducts() ([]*entity.Product, error) {
+	rows, err := pd.db.Query("SELECT id, name, description, price, category_id, image_url FROM products")
 	if err != nil {
 		return nil, err
 	}
@@ -32,25 +32,25 @@ func (pd *ProductDB) GetAllProducts() ([]*entity.Product, error) {
 	return products, nil
 }
 
-func (pd *ProductDB) GetProduct(id string) (*entity.Product, error){
+func (pd *ProductDB) GetProduct(id string) (*entity.Product, error) {
 	var product entity.Product
-	err := pd.db.QueryRow("SELECT id, name, price, category_id, image_url FROM products WHERE id=?", id).
-			Scan(&product.ID, &product.Name, &product.Price, &product.CategoryID, &product.ImageURL)
+	err := pd.db.QueryRow("SELECT id, name, price, category_id, image_url FROM products WHERE id = ?", id).
+		Scan(&product.ID, &product.Name, &product.Price, &product.CategoryID, &product.ImageURL)
 	if err != nil {
 		return nil, err
 	}
-	return &product, nil			
+	return &product, nil
 }
 
-func (pd *ProductDB) GetProductByCategoryID(categoryID string) ([]*entity.Product, error){
-	rows, err := pd.db.Query("SELECT id, name, description, price, category_id, image_url FROM products WHERE category_id=?", categoryID)
+func (pd *ProductDB) GetProductByCategoryID(categoryID string) ([]*entity.Product, error) {
+	rows, err := pd.db.Query("select id, name, description, price, category_id, image_url from products where category_id = ?", categoryID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
-	var products []*entity.Product 
-	for rows.Next(){
+	var products []*entity.Product
+	for rows.Next() {
 		var product entity.Product
 		if err := rows.Scan(&product.ID, &product.Name, &product.Description, &product.Price, &product.CategoryID, &product.ImageURL); err != nil {
 			return nil, err
@@ -60,24 +60,11 @@ func (pd *ProductDB) GetProductByCategoryID(categoryID string) ([]*entity.Produc
 	return products, nil
 }
 
-// Add a new product to the database
-func (pd *ProductDB) AddProduct(product *entity.Product) (*entity.Product, error) {
-	_, err := pd.db.Exec("INSERT INTO products (id, name, description, price, category_id, image_url) VALUES(?, ?, ?, ?, ?, ?)",
-	product.ID, product.Name, product.Description, product.Price, product.CategoryID, product.ImageURL )
+func (pd *ProductDB) CreateProduct(product *entity.Product) (*entity.Product, error) {
+	_, err := pd.db.Exec("INSERT INTO products (id, name, description, price, category_id, image_url) VALUES (?, ?, ?, ?, ?, ?)",
+		product.ID, product.Name, product.Description, product.Price, product.CategoryID, product.ImageURL)
 	if err != nil {
 		return nil, err
 	}
 	return product, nil
-}
-
-// Update an existing product in the database
-func (pd *ProductDB) UpdateProduct(*entity.Product) error {
-	_, err := pd.db.Exec("UPDATE products SET name=?, price=? WHERE id=?", p.Name, p.Price, p.ID)
-	return err
-}
-
-// Delete a product from the database
-func (pd *ProductDB) RemoveProduct(pid int) error {
-	_, err := pd.db.Exec("DELETE FROM products WHERE id=?", pid)
-	return err
 }
