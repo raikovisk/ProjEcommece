@@ -14,7 +14,7 @@ func NewCategoryService(categoryDB database.CategoryDB) *CategoryService {
 }
 
 func (cs *CategoryService) GetCategories() ([]*entity.Category, error) {
-	categories, err := cs.CategoryDB.GetCategories()
+	categories, err := cs.CategoryDB.GetAllCategories()
 	if err != nil {
 		return nil, err
 	}

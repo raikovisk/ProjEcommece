@@ -14,8 +14,8 @@ func NewCategoryDB (db *sql.DB) *CategoryDB {
 	return &CategoryDB{db: db}
 }
 
-func (cd *CategoryDB)  GetAllCategories() ([]*entity.Category, error) {
-	rows, err := cd.db.Query("SELECT id,  name FROM category")
+func (cd *CategoryDB) GetAllCategories() ([]*entity.Category, error) {
+	rows, err := cd.db.Query("SELECT id, name FROM categories")
 	if err != nil {
 		return nil, err
 	}
@@ -27,12 +27,12 @@ func (cd *CategoryDB)  GetAllCategories() ([]*entity.Category, error) {
 		if err  := rows.Scan(&category.ID, &category.Name);err!=nil{
 			return nil, err
 		}
-		categories = append(categories,&category)
+		categories = append(categories, &category)
 	}
 	return categories, nil
 }
 
-func (cd *CategoryDB) getCategory(id string) (*entity.Category, error){
+func (cd *CategoryDB) GetCategory(id string) (*entity.Category, error){
 	var category entity.Category
 	err :=  cd.db.QueryRow("SELECT id, name FROM category WHERE id=?", id).Scan(&category.ID, &category.Name)
 		if err != nil{
@@ -42,7 +42,7 @@ func (cd *CategoryDB) getCategory(id string) (*entity.Category, error){
 }
 
 func (cd *CategoryDB) CreateCategory(category *entity.Category) (string, error){
-	_, err := cd.db.Exec("INSERT INTO category(name) VALUES(?, ?)",category.ID, category.Name)
+	_, err := cd.db.Exec("INSERT INTO categories (id, name) VALUES (?, ?)",category.ID, category.Name)
 	if err != nil {
 		return "", err
 	}
